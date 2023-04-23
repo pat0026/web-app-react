@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import axios from "axios";
+import '../App.css';
 
 class ToDoItem extends Component {
     state = {
@@ -37,11 +38,11 @@ class ToDoItem extends Component {
 
     render() {
         return (
-            <div>
+            <div className='itemContainer'>
                 <p>{this.state.title}</p>
-                <button onClick={this.sendRequest}>
+                <div className='actionButton' onClick={this.sendRequest}>
                                 {this.state.button}
-                </button>
+                </div>
             </div>
         )
     }
