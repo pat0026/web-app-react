@@ -7,7 +7,7 @@ class CreateToDoItem extends Component {
     }
 
     createItem = () => {
-        axios.post("http://127.0.0.1:8000/v1/item/create" + this.state.title, {},
+        axios.post("http://127.0.0.1:8000/v1/item/create/" + this.state.title, {},
         {headers: {"token": "some_token"}})
         .then( response => {
             this.setState({"title": ""});
@@ -15,7 +15,7 @@ class CreateToDoItem extends Component {
         })
     }
 
-    handkeTitleChange = (e) => {
+    handleTitleChange = (e) => {
         this.setState({"title": e.target.value});
     }
 
