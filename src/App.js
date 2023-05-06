@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import ToDoItem from './components/ToDoItem';
 import CreateToDoItem from './components/CreateToDoItem';
+import LoginForm from './components/LoginForm';
 import "./App.css"
 
 class App extends Component {
@@ -9,19 +10,36 @@ class App extends Component {
     "pending_items": [],
     "done_items": [],
     "pending_items_count": 0,
-    "done_items_count": 0
+    "done_items_count": 0,
+    "login_status": false
   }
 
   // makes the API call
   getItems() {
     axios.get("http://127.0.0.1:8000/v1/item/get",
-    {headers: {"token": "some_token"}})
+    {headers: {"token": localStorage.getItem("user-token")}})
     .then(this.handleReturnedState)
+    .catch(error => {
+      if (error.response.status === 401) {
+        this.logout();
+      }
+    })
+  }
+
+  logout() {
+    localStorage.removeItem("user-token");
+    this.setState({"login_status": false});
   }
 
   //ensures the API call is update when mounted
   componentDidMount() {
-    this.getItems();
+    let token = localStorage.getItem("user-token");
+
+    if (token !== null) {
+      this.setState({login_status: true});
+      this.getItems();
+    }
+
   }
 
   // convert items form API to HTML
@@ -34,7 +52,8 @@ class App extends Component {
                   status={item.status}
                   passBackResponse={
                     this.handleReturnedState
-                  }/>
+                  }
+                  logout={this.logout}/>
       )
     })
     return itemList
@@ -51,23 +70,40 @@ class App extends Component {
     })
   }
 
+  handleLogin = (token) => {
+    localStorage.setItem("user-token", token);
+    this.setState({login_status: true});
+    this.getItems();
+  }
+
   //returns the HTML to be rendred
   render() {
-    return (
-      <div className="App">
-        <div className='mainContainer'>
-          <div className='header'>
-            <p>complete tasks: {this.state.done_items_count}</p>
-            <p> pending tasks: {this.state.pending_items_count}</p>
+    if (this.state.login_status === true) {
+      return (
+        <div className="App">
+          <div className='mainContainer'>
+            <div className='header'>
+              <p>complete tasks: {this.state.done_items_count}</p>
+              <p> pending tasks: {this.state.pending_items_count}</p>
+            </div>
+            <h1>Pending Items</h1>
+            {this.state.pending_items}
+            <h1>Done Items</h1>
+            {this.state.done_items}
+            <CreateToDoItem passBackResponse={this.handleReturnedState} />
           </div>
-          <h1>Pending Items</h1>
-          {this.state.pending_items}
-          <h1>Done Items</h1>
-          {this.state.done_items}
-          <CreateToDoItem passBackResponse={this.handleReturnedState} />
         </div>
-      </div>
-    )
+      )
+    } else {
+      return (
+        <div className='App'>
+          <div className='mainContainer'>
+            <LoginForm handleLogin={this.handleLogin}/>
+          </div>
+        </div>
+      )
+    }
+    
   }
 }
 
